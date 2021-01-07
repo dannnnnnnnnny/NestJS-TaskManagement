@@ -62,25 +62,25 @@ export class TasksController {
 ```ts
 // Service
 createTask(title: string, description: string): Task {
-    const task: Task = {
-      id: uuid.v1(),
-      title,
-      description,
-      status: TaskStatus.OPEN,
-    };
+  const task: Task = {
+    id: uuid.v1(),
+    title,
+    description,
+    status: TaskStatus.OPEN,
+  };
 
-    this.tasks.push(task);
-    return task;
-  }
+  this.tasks.push(task);
+  return task;
+}
 ```
 ---
 #### TasksController
 ```ts
 // Controller
 @Post()
-  createTask(@Body() body) {
-    console.log('body', body);
-  }
+createTask(@Body() body) {
+  console.log('body', body);
+}
 ```
 - @Body 데코레이터를 통해서 요청받은 값을 객체로 얻을 수 있음.
 
@@ -88,21 +88,27 @@ createTask(title: string, description: string): Task {
 ```ts
 // Controller
 @Post()
-  createTask(
-    @Body('title') title: string,
-    @Body('description') description: string,
-  ) {
-    console.log(title, description);
-  }
+createTask(
+  @Body('title') title: string,
+  @Body('description') description: string,
+) {
+  console.log(title, description);
+}
 ```
 
 ```ts
 @Post()
-  createTask(
-    @Body('title') title: string,
-    @Body('description') description: string,
-  ): Task {
-    return this.tasksService.createTask(title, description);
-  }
+createTask(
+  @Body('title') title: string,
+  @Body('description') description: string,
+): Task {
+  return this.tasksService.createTask(title, description);
+}
 ```
 - tasksService의 createTask에 body 데코레이터로 받은 title, description을 넘겨주어 새로운 task를 생성 후 반환
+
+
+#### 흐름
+1. Client는 title과 description이 담긴 Body를 Post요청으로 localhost:3000/tasks 통해 보냄
+2. 해당컨트롤러인 TasksController의 createTask()에서 요청을 처리하는데, @Body 데코레이터를 통해서 title, description을 받으면 TasksService.createTask()로 넘김
+3. TasksService.createTask()에서 받은 title, description을 통해 새로운 task 인스턴스를 생성하고, tasks에 추가함. 새로 생성된 인스턴스를 반환하며 종료
