@@ -43,3 +43,11 @@ deleteTask(@Param('id') id: string): void {
   this.tasksService.deleteTask(id);
 }
 ```
+
+## Status 업데이트
+- PATCH HTTP 요청 수신
+- 삭제할 작업 ID와 업데이트할 body 데이터
+- ID와 status 추출 후, 업데이트하고 클라이언트에 반환
+
+#### PATCH http://localhost:3000/tasks/1/status
+- PATCH, 변경할 특정 아이템 ID, 업데이트할 항목명
