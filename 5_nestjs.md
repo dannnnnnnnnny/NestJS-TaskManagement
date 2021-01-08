@@ -85,3 +85,34 @@ bootstrap();
 => (if Failure)
 ##### throw BadRequestException
 ##### )
+
+---
+### yarn add class-validator class-transformer
+- createTask() 시에 title과 description을 비워놔도 생성되는 문제가 발생
+- CreateTaskDto에 Validation Pipe를 설정해서 처리
+
+#### /dto/create-task.dto.ts
+```ts
+import { IsNotEmpty } from 'class-validator';
+
+export class CreateTaskDto {
+  @IsNotEmpty()
+  title: string;
+
+  @IsNotEmpty()
+  description: string;
+}
+```
+
+#### tasks.controller.ts
+```ts
+@Post() // POST /tasks (x-www-form-urlencoded/ title, description)
+@UsePipes(ValidationPipe)
+createTask(@Body() createTaskDto: CreateTaskDto): Task {
+  return this.tasksService.createTask(createTaskDto);
+}
+```
+- @UsePipes(ValidationPipe) 를 추가해주면서, dto에 넣어줬던 validator를 인식한 후 값이 Empty면 Client에 400 Error와 에러 내용을 보내줌
+
+
+
