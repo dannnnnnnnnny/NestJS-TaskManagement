@@ -114,5 +114,83 @@ createTask(@Body() createTaskDto: CreateTaskDto): Task {
 ```
 - @UsePipes(ValidationPipe) 를 추가해주면서, dto에 넣어줬던 validator를 인식한 후 값이 Empty면 Client에 400 Error와 에러 내용을 보내줌
 
+---
+- id로 task를 검색시 task가 존재하지 않을 경우
+#### tasks.service.ts
+```ts
+getTaskById(id: string): Task {
+  const found = this.tasks.find((task) => task.id === id);
+  if (!found) {
+    throw new NotFoundException(`Task With ID "${id}" not found`);
+  }
+  return found;
+}
+```
+- NotFoundException 에러 발생시킴
+
+```ts
+updateTaskStatus(id: string, status: TaskStatus): Task {
+  const task = this.getTaskById(id);
+  task.status = status;
+  return task;
+}
+```
+- updateTaskStatus에서 getTaskById 메소드를 사용하고있기 때문에 같이 적용되는 이점
+- delete에도 마찬가지
+```ts
+deleteTask(id: string): void {
+  const found = this.getTaskById(id);
+  this.tasks = this.tasks.filter((task) => task.id !== found.id);
+}
+```
+
+---
+## 사용자 지정 유효성 검사
+#### /pipes/task-status-validation.pipe.ts
+```ts
+import { ArgumentMetadata, PipeTransform } from '@nestjs/common';
+
+export class TaskStatusValidationPipe implements PipeTransform {
+  transform(value: any, metadata: ArgumentMetadata) {
+    console.log('value', value);
+    console.log('metadata', metadata);
+    return value;
+  }
+}
+```
+- value : status의 값
+- metadata : { metatype: [Function: String], type: 'body', data: 'status' }
+
+- 메타데이터는 따로 필요하지 않음
 
 
+```ts
+import { BadRequestException, PipeTransform } from '@nestjs/common';
+import { TaskStatus } from '../tasks.model';
+
+export class TaskStatusValidationPipe implements PipeTransform {
+  readonly allowedStatuses = [
+    TaskStatus.OPEN,
+    TaskStatus.IN_PROGRESS,
+    TaskStatus.DONE,
+  ];
+  transform(value: any) {
+    value = value.toUpperCase();
+    if (!this.isStatusValid(value)) {
+      throw new BadRequestException(`"${value}" is an invalid status`);
+    }
+    return value;
+  }
+
+  private isStatusValid(status: any) {
+    const idx = this.allowedStatuses.indexOf(status); // 없을 경우 -1 반환
+    return idx !== -1;
+  }
+}
+```
+- 사용자가 입력한 status 값에 대한 유효성 검사를 하는 Custom Pipe
+- status 값이 어떤 값일지 알 수 없으므로 any 타입으로 수신
+- value값을 대문자로 변경
+- isStatusValid() 메소드에 담아서 TaskStatus 상태 중에 있는지 체크
+- 없으면 400 BadRequest Error 발생
+- 있으면 그대로 진행
