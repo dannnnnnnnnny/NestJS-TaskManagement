@@ -57,13 +57,6 @@ export class TasksService {
   }
 
   deleteTask(id: string): void {
-    // 내가 한 방법
-    // const taskToFind = this.tasks.find((item) => item.id === id);
-    // const idx = this.tasks.indexOf(taskToFind);
-    // if (idx > -1) {
-    //   this.tasks.splice(idx, 1);
-    // }
-
     const found = this.getTaskById(id);
     this.tasks = this.tasks.filter((task) => task.id !== found.id);
   }
