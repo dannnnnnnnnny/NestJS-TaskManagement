@@ -118,6 +118,7 @@ export class TasksModule {}
 - TaskStatus는 task-status.enum.ts로 옮김
 - uuid 모듈 삭제 (@PrimaryGenerateColumn()이 자동적으로 ID를 생성해줌)
 
+## getById 로직
 ### tasks.service.ts 수정
 ```ts
 @Injectable()
@@ -149,3 +150,41 @@ getTaskById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
 ```
 - id는 number 타입이므로 숫자를 받는 것을 보장할 수 있도록 ParseIntPipe 추가
 - 반환값 Promise로 변경
+
+## createTask 로직
+- 서비스
+```ts
+// service
+async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+  return this.taskRepository.createTask(createTaskDto);
+}
+```
+- 레포지토리
+```ts
+@EntityRepository(Task)
+export class TaskRepository extends Repository<Task> {
+  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+    const { title, description } = createTaskDto;
+    const task = new Task();
+    task.title = title;
+    task.description = description;
+    task.status = TaskStatus.OPEN;
+    await task.save();
+
+    return task;
+  }
+}
+```
+
+- 컨트롤러
+``` ts
+@Post() // POST /tasks (x-www-form-urlencoded/ title, description)
+@UsePipes(ValidationPipe)
+createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
+  return this.tasksService.createTask(createTaskDto);
+}
+```
+
+- 컨트롤러는 거의 달라진게 없음
+- 서비스의 createTask 로직을 repository로 옮겨서 서비스 로직 코드를 깔끔하게 한 후 호출하여 사용 (서비스는 작게 유지)
+
