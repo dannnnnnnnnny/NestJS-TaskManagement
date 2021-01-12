@@ -194,3 +194,38 @@ export class TaskStatusValidationPipe implements PipeTransform {
 - isStatusValid() 메소드에 담아서 TaskStatus 상태 중에 있는지 체크
 - 없으면 400 BadRequest Error 발생
 - 있으면 그대로 진행
+
+
+### 검색 DTO(get-tasks-filter.dto.ts)에 Pipe 적용
+```ts
+// /dto/get-tasks-filter.dto.ts
+import { TaskStatus } from '../tasks.model';
+import { IsIn, IsOptional } from 'class-validator';
+
+export class GetTasksFilterDto {
+  @IsOptional()
+  @IsIn([TaskStatus.OPEN, TaskStatus.IN_PROGRESS, TaskStatus.DONE])
+  status: TaskStatus;
+
+  @IsOptional()
+  @IsNotEmpty()
+  search: string;
+}
+```
+- IsOptional(): 선택사항
+- @IsIn(): 인자값으로 배열이 들어가며 이 값은 배열안에 있는 값에 한해서 허용
+
+```ts
+// task.controller.ts
+@Get() // GET /tasks or /tasks?status=OPEN&search=hello
+getTasks(@Query(ValidationPipe) filterDto: GetTasksFilterDto): Task[] {
+  if (Object.keys(filterDto).length) {
+    return this.tasksService.getTaskWithFilters(filterDto);
+  } else {
+    return this.tasksService.getAllTasks();
+  }
+}
+```
+- @Query() 인자값으로 ValidationPipe 추가
+- => GET localhost:3000/tasks?status=HELLO 요청시 400Error 발생
+- => GET localhost:3000/tasks?search= 요청시 search값 비어있으므로 400 Error 발생
