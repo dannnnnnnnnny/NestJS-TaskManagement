@@ -81,3 +81,39 @@ export class Task extends BaseEntity {
 ```
 - extends BaseEntity
 - @PrimaryGeneratedColumn() : 새 task 만들 시, 자동으로 생성
+
+### task Repository
+- task.repository.ts
+- 캡슐화된 방식으로 Entity를 관리할 수 있음
+- Entity 클래스에서 직접 수행하는 것과 동일한 작업을 수행하지만, 더 많은 사용자 정의를 추가할 수 있음
+- DB 레이어와 관련된 무거운 로직을 캡슐화하고, 코드를 제거하여 더 짧은 메서드로 서비스 및 코드를 만들어낼 수 있음
+```ts
+// src/tasks/task.repository.ts
+import { EntityRepository, Repository } from 'typeorm';
+import { Task } from './task.entity';
+
+@EntityRepository(Task)
+export class TaskRepository extends Repository<Task> {}
+```
+
+##### task.module.ts에 imports: [TypeOrmModule.forFeature([TaskRepository])] 추가
+```ts
+// src/tasks/task.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TaskRepository } from './task.repository';
+import { TasksController } from './tasks.controller';
+import { TasksService } from './tasks.service';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([TaskRepository])],
+  controllers: [TasksController], // nest g controllert tasks로 생성한 컨트롤러가 주입됨
+  providers: [TasksService],
+})
+export class TasksModule {}
+```
+---
+- tasks.controller.ts, tasks.service.ts 로직 주석 처리
+- Task Interface, task.model.ts 삭제 (엔티티가 작업 정의 역할을 해줌)
+- TaskStatus는 task-status.enum.ts로 옮김
+- uuid 모듈 삭제 (@PrimaryGenerateColumn()이 자동적으로 ID를 생성해줌)
