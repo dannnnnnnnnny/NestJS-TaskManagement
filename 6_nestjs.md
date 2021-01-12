@@ -117,3 +117,35 @@ export class TasksModule {}
 - Task Interface, task.model.ts 삭제 (엔티티가 작업 정의 역할을 해줌)
 - TaskStatus는 task-status.enum.ts로 옮김
 - uuid 모듈 삭제 (@PrimaryGenerateColumn()이 자동적으로 ID를 생성해줌)
+
+### tasks.service.ts 수정
+```ts
+@Injectable()
+export class TasksService {
+constructor(
+  @InjectRepository(TaskRepository)
+  private taskRepository: TaskRepository,
+) {}
+
+async getTaskById(id: number): Promise<Task> {
+  const found = await this.taskRepository.findOne(id);
+  if (!found) {
+    throw new NotFoundException(`Task With ID "${id}" not found`);
+  }
+  return found;
+}
+```
+- id는 이제 자동적으로 number가 들어감
+- async, await 구문으로 변경 => Promise 반환
+- 생성자로 taskRepository를 주입받음
+- 해당 저장소에서 findOne(id)로 task를 찾음
+
+### tasks.controller.ts 수정
+```ts
+@Get('/:id') // GET /tasks/1
+getTaskById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
+  return this.tasksService.getTaskById(id);
+}
+```
+- id는 number 타입이므로 숫자를 받는 것을 보장할 수 있도록 ParseIntPipe 추가
+- 반환값 Promise로 변경
