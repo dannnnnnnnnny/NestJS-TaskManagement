@@ -42,6 +42,10 @@ export class TasksController {
   createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
     return this.tasksService.createTask(createTaskDto);
   }
+  @Delete('/:id')
+  deleteTask(@Param('id') id: number): void {
+    this.tasksService.deleteTask(id);
+  }
 
   // @Patch('/:id/status')
   // patchTask(
@@ -49,10 +53,5 @@ export class TasksController {
   //   @Body('status', TaskStatusValidationPipe) status: TaskStatus,
   // ): Task {
   //   return this.tasksService.updateTaskStatus(id, status);
-  // }
-
-  // @Delete('/:id')
-  // deleteTask(@Param('id') id: string): void {
-  //   this.tasksService.deleteTask(id);
   // }
 }

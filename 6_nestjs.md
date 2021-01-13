@@ -150,7 +150,7 @@ getTaskById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
 ```
 - id는 number 타입이므로 숫자를 받는 것을 보장할 수 있도록 ParseIntPipe 추가
 - 반환값 Promise로 변경
-
+---
 ## createTask 로직
 - 서비스
 ```ts

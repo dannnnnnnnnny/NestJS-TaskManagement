@@ -30,6 +30,10 @@ export class TasksService {
     return this.taskRepository.createTask(createTaskDto);
   }
 
+  async deleteTask(id: number): Promise<void> {
+    this.getTaskById(id);
+    await this.taskRepository.delete(id);
+  }
   // private tasks: Task[] = [];
 
   // getAllTasks(): Task[] {
