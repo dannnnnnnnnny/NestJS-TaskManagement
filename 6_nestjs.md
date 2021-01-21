@@ -188,3 +188,39 @@ createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
 - 컨트롤러는 거의 달라진게 없음
 - 서비스의 createTask 로직을 repository로 옮겨서 서비스 로직 코드를 깔끔하게 한 후 호출하여 사용 (서비스는 작게 유지)
 
+---
+- 간단한 DB 조작 뿐 아니라 조건부로 조건을 구축하기 위해서 쿼리 빌더를 사용하면 정교하게 코드를 작성할 수 있음
+```ts
+// tasks.controller.ts
+@Get() // GET /tasks or /tasks?status=OPEN&search=hello
+getTasks(
+  @Query(ValidationPipe) filterDto: GetTasksFilterDto,
+): Promise<Task[]> {
+  return this.tasksService.getTasks(filterDto);
+}
+```
+- 기존의 if문으로 나눠서 필터와 전체 조회를 수행했던 것과 달리, 하나의 작업으로 수행
+
+```ts
+// task.repository.ts
+async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
+  const { status, search } = filterDto;
+  const query = this.createQueryBuilder('task');
+
+  if (status) {
+    query.andWhere('task.status = :status', { status });
+  }
+
+  if (search) {
+    query.andWhere(
+      '(task.title LIKE :search OR task.description LIKE :search)', // 하나의 조건으로 사용하기 위해 괄호
+      { search: `%${search}%` }, // 부분 단어 일치 적용
+    );
+  }
+
+  const tasks = await query.getMany();
+  return tasks;
+}
+```
+- Repository로부터 생성된 쿼리 빌더는 TypeORM의 강력한 기능으로, Query를 생성하고 실행한 다음 자동적으로 변형된 Entity를 반환함
+- andWhere를 통해서 후속 조건부를 추가하는 강력한 기능이 있음
