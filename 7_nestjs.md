@@ -135,3 +135,42 @@ export class UserRepository extends Repository<User> {
 ```
 - bcrypt를 이용해서 salt를 생성한 후, salt와 함께 password를 해싱한 후 저장
 - 단방향 해시이기 때문에 DB 암호가 노출되어도 문제없음
+
+---
+## 로그인
+```ts
+// user.entity.ts
+async validatePassword(password: string): Promise<boolean> {
+  const hash = await bcrypt.hash(password, this.salt);
+  return hash === this.password;
+}
+```
+- 입력받은 password를 해당 유저의 salt로 해싱해서 비밀번호가 같은지 체크 (true / false)
+
+```ts
+// user.repository.ts
+async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+  const { username, password } = authCredentialsDto;
+  const user = await this.findOne({ username });
+
+  if (user && (await user.validatePassword(password))) {
+    return user.username;
+  } else {
+    return null;
+  }
+}
+```
+- 입력받은 username를 통해 user가 존재하는지 확인하고
+- 유저가 존재하면서, 비밀번호가 같다면 해당 유저의 username을 반환
+
+```ts
+async signIn(authCredentialsDto: AuthCredentialsDto) {
+  const username = await this.userRepository.validateUserPassword(
+    authCredentialsDto,
+  );
+  if (!username) {
+    throw new UnauthorizedException('유효하지 않은 인증입니다.');
+  }
+}
+```
+- username을 반환하지 않는다면 Error 발생시킴
