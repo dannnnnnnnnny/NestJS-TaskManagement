@@ -16,7 +16,7 @@ export class TaskRepository extends Repository<Task> {
 
     if (search) {
       query.andWhere(
-        '(task.title LIKE :search OR task.description LIKE :search)',
+        '(task.title LIKE :search OR task.description LIKE :search)', // 하나의 조건으로 사용하기 위해 괄호
         { search: `%${search}%` }, // 부분 단어 일치 적용
       );
     }
