@@ -41,3 +41,50 @@ import { PassportModule } from '@nestjs/passport';
 })
 export class AuthModule {}
 ```
+- 1시간 후 만료되는 jwt 토큰
+- auth.module에 import 한 후, service에서 의존성 주입사용하여 주입할 수 있음.
+```ts
+// jwt-payload.interface.ts
+export interface JwtPayload {
+  username: string;
+}
+```
+
+```ts
+// auth.service.ts
+constructor(
+  @InjectRepository(UserRepository)
+  private userRepository: UserRepository,
+  private jwtService: JwtService,
+) {}
+
+async signIn(
+  authCredentialsDto: AuthCredentialsDto,
+): Promise<{ accessToken: string }> {
+  const username = await this.userRepository.validateUserPassword(
+    authCredentialsDto,
+  );
+  if (!username) {
+    throw new UnauthorizedException('유효하지 않은 인증입니다.');
+  }
+
+  const payload: JwtPayload = { username };
+  const accessToken = await this.jwtService.sign(payload);
+
+  return { accessToken };
+}
+```
+
+```ts
+// auth.controller.ts
+@Post('/signin')
+signIn(
+  @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
+): Promise<{ accessToken: string }> {
+  return this.authService.signIn(authCredentialsDto);
+}
+```
+- POST localhost:3000/signin (username, password)로 로그인 요청을 하면 accessToken이 반환됨
+- jwt.io 사이트에서 확인 가능함
+
+
