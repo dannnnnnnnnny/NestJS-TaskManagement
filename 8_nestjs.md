@@ -147,3 +147,35 @@ test(@Req() req) {
 }
 ```
 - /auth/signin 에서 로그인 성공 후 받은 accessToken을 /auth/test에 Headers를 통해서 Authorization : Bearer $%#bBD241563... 이렇게 값을 보내주면 jwt.strategy.ts에서 BearerToken을 추출하여 검증함
+- UseGuards 데코레이터를 사용해서 jwt 인증 (이 어노테이션이 붙은 Controller는 요청이 들어오면 jwt.strategy에 정의되어있는 validate 메소드를 통과함)
+
+- validate()에서 데이터를 return 받으면 Request 객체에 들어가는데, 그 중 user만을 얻고자 한다면 번거로워짐
+- '커스텀 데코레이터'를 생성해서 Request 객체에서 사용자만 깔끔하게 추출하여 해결할 수 있음
+```ts
+// get-user.decorator.ts
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { User } from './user.entity';
+
+export const GetUser = createParamDecorator(
+  (data, ctx: ExecutionContext): User => {
+    const req = ctx.switchToHttp().getRequest();
+    return req.user;
+  },
+);
+```
+
+```ts
+// auth.controller.ts
+@Post('/test')
+@UseGuards(AuthGuard())
+test(@GetUser() user: User) {
+  console.log(user);
+}
+```
+- => User {
+  id: 9,
+  username: 'test01',
+  password: '$2b$10$zy7nUJhtxIHYL7pzhhANx.hj6MI4YYKSDJE1/aFaiJYQ3X3DRYQlq',
+  salt: '$2b$10$zy7nUJhtxIHYL7pzhhANx.'
+}
+- user에 대한 정보만 반환받을 수 있음
