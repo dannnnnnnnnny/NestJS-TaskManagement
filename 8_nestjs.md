@@ -179,3 +179,33 @@ test(@GetUser() user: User) {
   salt: '$2b$10$zy7nUJhtxIHYL7pzhhANx.'
 }
 - user에 대한 정보만 반환받을 수 있음
+
+---
+### task 모듈에서 인증 사용하기
+```ts
+// tasks.module.ts
+.
+.
+.
+imports: [TypeOrmModule.forFeature([TaskRepository]), AuthModule]
+.
+.
+.
+```
+- AuthModule import 추가
+
+```ts
+// tasks.controller.ts
+.
+.
+.
+@Controller('tasks')
+@UseGuards(AuthGuard())
+export class TasksController {
+  constructor(private tasksService: TasksService) {}
+.
+.
+.
+```
+- Controller 전체를 UseGuards로
+- tasks에 대한 작업을 요청하려면 Headers에 토큰값을 넣어 보내야 함
