@@ -42,7 +42,7 @@ import { PassportModule } from '@nestjs/passport';
 export class AuthModule {}
 ```
 - 1시간 후 만료되는 jwt 토큰
-- auth.module에 import 한 후, service에서 의존성 주입사용하여 주입할 수 있음.
+
 ```ts
 // jwt-payload.interface.ts
 export interface JwtPayload {
@@ -50,6 +50,7 @@ export interface JwtPayload {
 }
 ```
 
+#### auth.module에 import 한 후, service에서 의존성 주입사용하여 주입할 수 있음.
 ```ts
 // auth.service.ts
 constructor(
@@ -87,4 +88,62 @@ signIn(
 - POST localhost:3000/signin (username, password)로 로그인 요청을 하면 accessToken이 반환됨
 - jwt.io 사이트에서 확인 가능함
 
+---
+## Jwt 전략 설정
+```ts
+// jwt.strategy.ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Strategy, ExtractJwt } from 'passport-jwt';
+import { JwtPayload } from './jwt-payload.interface';
+import { User } from './user.entity';
+import { UserRepository } from './user.repository';
 
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(
+    @InjectRepository(UserRepository) // 밑에 메소드에서 this.userRepository를 사용가능해짐
+    private userRepository: UserRepository,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // JWT를 추출하여 사용할 방법
+      secretOrKey: 'topSecret51', // 토큰 서명을 확인할 비밀키
+    });
+  }
+
+  async validate(payload: JwtPayload): Promise<User> {
+    const { username } = payload;
+    const user = await this.userRepository.findOne({ username });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return user;
+  }
+}
+``` 
+- 추출된 정보를 사용하여 요청을 진행할 수 있는지 여부 결정
+- jwtFromRequest: Request로부터 Bearer JWT을 추출. (표준은 Request의 헤더인 Authorization header에서 bearer 토큰을 사용하는 것)
+- validate() : jwt.strategy를 사용할 때, passport는 JWT sign을 json으로 decode하고 validate()를 호출함.
+- 이전에 서명한 사용자가 유효한지 검증. validate()의 return으로 정보들이 들어있는 객체를 Request 객체에 리턴함
+- 검증은 passport에서, jwt sign은 auth.service에서
+
+```ts
+// auth.module.ts
+providers: [AuthService, JwtStrategy],
+exports: [JwtStrategy, PassportModule],
+```
+- providers, exports 수정 및 추가
+- 다른 모듈에서도 사용할 수 있도록
+
+```ts
+// auth.controller.ts
+@Post('/test')
+@UseGuards(AuthGuard())
+test(@Req() req) {
+  console.log(req);
+}
+```
+- /auth/signin 에서 로그인 성공 후 받은 accessToken을 /auth/test에 Headers를 통해서 Authorization : Bearer $%#bBD241563... 이렇게 값을 보내주면 jwt.strategy.ts에서 BearerToken을 추출하여 검증함
