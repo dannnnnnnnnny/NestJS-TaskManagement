@@ -3,6 +3,7 @@
 - nest g controller auth --no-spec
 - nest g service auth --no-spec
 
+### username, password 규칙 지정 및 유효성 검사
 #### auth-credentials.dto.ts
 ```ts
 import { IsString, Matches, MaxLength, MinLength } from "class-validator";
@@ -77,7 +78,7 @@ export class User extends BaseEntity {
 }
 ```
 - userEntity에서 @Unique() 데코레이터를 통해서 고유한 값을 지정할 필드명을 Array로 설정하면 됨
-- 중복된 아이디로 가입하려고할 시, 자동적으로 500 Server Error를 뿜어내는데, 
+- 중복된 아이디로 가입(저장)하려고 할 시, 자동적으로 500 Server Error를 뿜어내는데, 
 
 ```ts
 // user.repository.ts
@@ -97,6 +98,7 @@ try {
 ### 비밀번호 해싱
 - yarn add bcrypt
 ```ts
+// user.repository.ts
 import {
   ConflictException,
   InternalServerErrorException,
@@ -164,6 +166,7 @@ async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<stri
 - 유저가 존재하면서, 비밀번호가 같다면 해당 유저의 username을 반환
 
 ```ts
+// user.service.ts
 async signIn(authCredentialsDto: AuthCredentialsDto) {
   const username = await this.userRepository.validateUserPassword(
     authCredentialsDto,

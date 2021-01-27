@@ -9,6 +9,7 @@ import { User } from './user.entity';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
+  // 회원가입
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { username, password } = authCredentialsDto;
 
@@ -29,6 +30,7 @@ export class UserRepository extends Repository<User> {
     }
   }
 
+  // 로그인
   async validateUserPassword(
     authCredentialsDto: AuthCredentialsDto,
   ): Promise<string> {
@@ -42,6 +44,7 @@ export class UserRepository extends Repository<User> {
     }
   }
 
+  // 비밀번호 암호화
   private async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
   }

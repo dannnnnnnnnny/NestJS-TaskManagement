@@ -56,7 +56,7 @@ export interface JwtPayload {
 constructor(
   @InjectRepository(UserRepository)
   private userRepository: UserRepository,
-  private jwtService: JwtService,
+  private jwtService: JwtService, // JWT 사용
 ) {}
 
 async signIn(
@@ -70,7 +70,7 @@ async signIn(
   }
 
   const payload: JwtPayload = { username };
-  const accessToken = await this.jwtService.sign(payload);
+  const accessToken = await this.jwtService.sign(payload); // JWT 사용
 
   return { accessToken };
 }
