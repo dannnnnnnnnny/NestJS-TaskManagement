@@ -8,6 +8,7 @@ tasks: Task[];
 - user, tasks 양측으로의 관계 설정 (1:N)
 
 ```ts
+// task.entity.ts
 @ManyToOne((type) => User, (user) => user.tasks, { eager: false })
 user: User;
 ```
@@ -51,4 +52,25 @@ async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
 
   return task;
 }
+```
+---
+# getTasks() -> 사용자가 소유한 작업만 반환하게 user 추가로 받기
+```ts
+// tasks.controller.ts
+@Get() // GET /tasks or /tasks?status=OPEN&search=hello
+getTasks(
+  @Query(ValidationPipe) filterDto: GetTasksFilterDto,
+  @GetUser() user: User,
+): Promise<Task[]> {
+  return this.tasksService.getTasks(filterDto, user);
+}
+```
+```ts
+// task.repository.ts
+async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
+  const { status, search } = filterDto;
+  const query = this.createQueryBuilder('task');
+
+  query.where('task.userId = :userId', { userId: user.id });
+  // task.userId는 자동적으로 생성되는데 typeorm의 Entity에 userId를 따로 정의해줘야 함
 ```
