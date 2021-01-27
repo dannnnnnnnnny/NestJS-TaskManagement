@@ -54,7 +54,7 @@ async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
 }
 ```
 ---
-# getTasks() -> 사용자가 소유한 작업만 반환하게 user 추가로 받기
+### getTasks() -> 사용자가 소유한 작업만 반환하게 user 추가로 받기
 ```ts
 // tasks.controller.ts
 @Get() // GET /tasks or /tasks?status=OPEN&search=hello
@@ -74,3 +74,67 @@ async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
   query.where('task.userId = :userId', { userId: user.id });
   // task.userId는 자동적으로 생성되는데 typeorm의 Entity에 userId를 따로 정의해줘야 함
 ```
+
+### getTaskById() -> 사용자가 소유한 작업 중에서 id 검색
+```ts
+// tasks.controller.ts
+@Get('/:id') // GET /tasks/1
+getTaskById(
+  @Param('id', ParseIntPipe) id: number,
+  @GetUser() user: User,
+): Promise<Task> {
+  return this.tasksService.getTaskById(id, user);
+}
+```
+```ts
+// tasks.service.ts
+async getTaskById(id: number, user: User): Promise<Task> {
+  const found = await this.taskRepository.findOne({
+    where: { id, userId: user.id },
+  });
+```
+
+### patchTask() -> 변경된 getTaskById()에 맞춰 리팩토링
+```ts
+// tasks.controller.ts
+@Patch('/:id/status')
+patchTask(
+  @Param('id', ParseIntPipe) id: number,
+  @Body('status', TaskStatusValidationPipe) status: TaskStatus,
+  @GetUser() user: User,
+): Promise<Task> {
+  return this.tasksService.updateTaskStatus(id, status, user);
+}
+``` 
+```ts
+// tasks.service.ts
+async updateTaskStatus(
+  id: number,
+  status: TaskStatus,
+  user: User,
+): Promise<Task> {
+  const task = await this.getTaskById(id, user);
+  task.status = status;
+  await task.save();
+  return task;
+}
+```
+
+### deleteTask() -> 마찬가지로 리팩토링
+```ts
+// tasks.controller.ts
+@Delete('/:id')
+deleteTask(
+  @Param('id', ParseIntPipe) id: number,
+  @GetUser() user: User,
+): Promise<void> {
+  return this.tasksService.deleteTask(id, user);
+}
+```
+```ts
+// tasks.service.ts
+async deleteTask(id: number, user: User): Promise<void> {
+  const result = await this.taskRepository.delete({ id, userId: user.id });
+```
+
+
