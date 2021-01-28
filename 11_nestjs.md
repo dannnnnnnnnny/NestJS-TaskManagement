@@ -124,6 +124,9 @@ async function bootstrap() {
 
   if (process.env.NODE_ENV === 'development') {
     app.enableCors();
+  } else {
+    app.enableCors({ origin: serverConfig.origin }); // S3 URL 허용
+    logger.log(`Accepting requests from origin "${serverConfig.origin}"`)
   }
 
   const port = process.env.PORT || serverConfig.port; // 3000
@@ -131,6 +134,6 @@ async function bootstrap() {
   logger.log(`Application listening on port ${port}`);
 }
 bootstrap();
-
 ```
 - 개발모드에 대해서만 Cors 활성화
+- production모드로 들어오는 모든 요청은 자동으로 잠김
