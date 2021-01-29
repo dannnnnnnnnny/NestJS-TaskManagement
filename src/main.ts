@@ -12,7 +12,7 @@ async function bootstrap() {
     app.enableCors();
   } else {
     app.enableCors({ origin: serverConfig.origin }); // S3 URL 허용
-    logger.log(`Accepting requests from origin "${serverConfig.origin}"`)
+    logger.log(`Accepting requests from origin "${serverConfig.origin}"`);
   }
 
   const port = process.env.PORT || serverConfig.port; // 3000

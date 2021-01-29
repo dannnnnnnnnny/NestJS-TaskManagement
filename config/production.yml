@@ -2,4 +2,10 @@ server:
   origin: http://nestjs-task-management-frontend-dh2021.s3-website-us-east-1.amazonaws.com
 
 db:
+  host: 'localhost'
+  username: 'postgres'
+  password: 'postgres'
   synchronize: false
+
+jwt:
+  secret: 'topSecret51'
