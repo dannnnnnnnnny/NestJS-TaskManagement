@@ -1,3 +1,9 @@
+describe('my test', () => {
+  it('returns true', () => {
+    expect(true).toEqual(true);
+  });
+});
+
 // feature
 class FriendsList {
   friends = [];
@@ -24,6 +30,7 @@ class FriendsList {
 describe('FriendsList', () => {
   let friendsList;
 
+  // 테스트 전에 실행됨
   beforeEach(() => {
     friendsList = new FriendsList();
   });
@@ -38,10 +45,14 @@ describe('FriendsList', () => {
   });
 
   it('announces friendship', () => {
-    friendsList.announceFriendship = jest.fn();
-    expect(friendsList.announceFriendship).not.toHaveBeenCalled();
+    friendsList.announceFriendship = jest.fn(); // 모의함수가 호출량을 체크함
+    expect(friendsList.announceFriendship).not.toHaveBeenCalled(); // 호출하지 않았으므로
+    friendsList.addFriend('danny');
+    expect(friendsList.announceFriendship).toHaveBeenCalledTimes(1); // 호출 몇번 했는지
+    expect(friendsList.announceFriendship).toBeCalled(); // 호출됐는지
     friendsList.addFriend('Ariel');
-    expect(friendsList.announceFriendship).toHaveBeenCalledWith('Ariel');
+    expect(friendsList.announceFriendship).toHaveBeenCalledWith('Ariel'); // 어떤 파라미터와 호출했는지
+    expect(friendsList.friends.length).toBeGreaterThanOrEqual(2); // 2보다 크거나 같음
   });
 
   describe('removeFriend', () => {
