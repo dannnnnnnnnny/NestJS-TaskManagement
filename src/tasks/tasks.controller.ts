@@ -14,6 +14,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import Bull from 'bull';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -80,5 +81,18 @@ export class TasksController {
     @GetUser() user: User,
   ): Promise<Task> {
     return this.tasksService.updateTaskStatus(id, status, user);
+  }
+
+  @Post('/queue')
+  createTaskQueue(
+    @GetUser() user: User,
+    @Body() createTaskDto: CreateTaskDto,
+  ): Promise<Bull.Job> {
+    this.logger.verbose(
+      `User "${user.username}" creating a new task queue. Data: ${JSON.stringify(
+        createTaskDto,
+      )}`,
+    );
+    return this.tasksService.addTaskQueue(createTaskDto, user);
   }
 }

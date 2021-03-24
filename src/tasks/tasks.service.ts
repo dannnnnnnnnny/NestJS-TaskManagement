@@ -1,5 +1,7 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import Bull, { Queue } from 'bull';
 import { User } from 'src/auth/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
@@ -12,7 +14,17 @@ export class TasksService {
   constructor(
     @InjectRepository(TaskRepository)
     private taskRepository: TaskRepository,
+    @InjectQueue('task')
+    private taskQueue: Queue,
   ) {}
+
+  async addTaskQueue(createTaskDto: CreateTaskDto, user: User): Promise<Bull.Job> {
+    return await this.taskQueue.add(
+      'taskQueue',
+      { ...createTaskDto, userId: user.id, created: new Date(Date.now()).getTime() },
+      { delay: 10000 },
+    );
+  }
 
   getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
     return this.taskRepository.getTasks(filterDto, user);
