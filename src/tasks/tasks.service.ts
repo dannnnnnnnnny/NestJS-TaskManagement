@@ -1,5 +1,6 @@
 import { InjectQueue } from '@nestjs/bull';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import Bull, { Queue } from 'bull';
 import { User } from 'src/auth/user.entity';
@@ -11,11 +12,14 @@ import { TaskRepository } from './task.repository';
 
 @Injectable()
 export class TasksService {
+  private logger = new Logger('TaskService');
+
   constructor(
     @InjectRepository(TaskRepository)
     private taskRepository: TaskRepository,
     @InjectQueue('task')
     private taskQueue: Queue,
+    @Inject(REQUEST) private readonly request,
   ) {}
 
   async addTaskQueue(createTaskDto: CreateTaskDto, user: User): Promise<Bull.Job> {
@@ -27,6 +31,7 @@ export class TasksService {
   }
 
   getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
+    this.logger.log(`${this.request.headers.host}, ${JSON.stringify(this.request.user)}, ${this.request.originalUrl}`);
     return this.taskRepository.getTasks(filterDto, user);
   }
 
