@@ -35,7 +35,7 @@ export class TasksController {
   getTasks(
     @Query(ValidationPipe) filterDto: GetTasksFilterDto,
     @GetUser() user: User,
-  ): Promise<Task[]> {
+  ) {
     this.logger.verbose(
       `User "${user.username}" retrieving all tasks. Filters: ${JSON.stringify(
         filterDto,
@@ -87,7 +87,7 @@ export class TasksController {
   createTaskQueue(
     @GetUser() user: User,
     @Body() createTaskDto: CreateTaskDto,
-  ): Promise<Bull.Job> {
+  ) {
     this.logger.verbose(
       `User "${user.username}" creating a new task queue. Data: ${JSON.stringify(
         createTaskDto,
