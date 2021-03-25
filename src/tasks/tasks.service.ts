@@ -1,5 +1,5 @@
 import { InjectQueue } from '@nestjs/bull';
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { HttpService, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import Bull, { Queue } from 'bull';
@@ -20,18 +20,38 @@ export class TasksService {
     @InjectQueue('task')
     private taskQueue: Queue,
     @Inject(REQUEST) private readonly request,
+    private readonly httpService: HttpService,
   ) {}
 
-  async addTaskQueue(createTaskDto: CreateTaskDto, user: User): Promise<Bull.Job> {
-    return await this.taskQueue.add(
+  async addTaskQueue(createTaskDto: CreateTaskDto, user: User) {
+    await this.taskQueue.add(
       'taskQueue',
       { ...createTaskDto, userId: user.id, created: new Date(Date.now()).getTime() },
       { delay: 10000 },
     );
+
+    return { success: true, result: 'hello' };
   }
 
-  getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
+  async getTasks(filterDto: GetTasksFilterDto, user: User) {
     this.logger.log(`${this.request.headers.host}, ${JSON.stringify(this.request.user)}, ${this.request.originalUrl}`);
+    const headerRequest = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRhbm55IiwiaWF0IjoxNjE2Njc3MDg0LCJleHAiOjE2MTY2ODA2ODR9.VNh41ci3RRcqONOJhVkn6jeU6bbYXNn2JO7hItHRDL0'
+    };
+
+    const data = await this.httpService.post('http://localhost:3000/tasks/queue',
+        {
+          title: 'haha',
+          description: 'test',
+        },
+        {
+          headers: headerRequest,
+        },
+      )
+      .toPromise();
+
+    console.log(data.data);
     return this.taskRepository.getTasks(filterDto, user);
   }
 

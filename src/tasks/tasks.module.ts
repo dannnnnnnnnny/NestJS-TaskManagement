@@ -1,5 +1,5 @@
 import { BullModule } from '@nestjs/bull';
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { TaskRepository } from './task.repository';
@@ -11,6 +11,7 @@ import { TasksService } from './tasks.service';
   imports: [
     TypeOrmModule.forFeature([TaskRepository]),
     AuthModule,
+    HttpModule,
     BullModule.registerQueue({
       name: 'task',
       redis: {
