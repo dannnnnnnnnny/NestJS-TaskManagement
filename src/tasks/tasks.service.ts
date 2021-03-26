@@ -2,7 +2,8 @@ import { InjectQueue } from '@nestjs/bull';
 import { HttpService, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
-import Bull, { Queue } from 'bull';
+import { Queue } from 'bull';
+import { Logger as PinoLogger } from 'nestjs-pino';
 import { User } from 'src/auth/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
@@ -21,6 +22,7 @@ export class TasksService {
     private taskQueue: Queue,
     @Inject(REQUEST) private readonly request,
     private readonly httpService: HttpService,
+    private readonly pinoLogger: PinoLogger,
   ) {}
 
   async addTaskQueue(createTaskDto: CreateTaskDto, user: User) {
@@ -51,7 +53,7 @@ export class TasksService {
       )
       .toPromise();
 
-    console.log(data.data);
+    this.pinoLogger.log(data.data);
     return this.taskRepository.getTasks(filterDto, user);
   }
 
