@@ -1,5 +1,5 @@
 import { ConflictException, InternalServerErrorException } from '@nestjs/common';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, getManager, getRepository, Raw, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { User } from './user.entity';
@@ -42,5 +42,22 @@ export class UserRepository extends Repository<User> {
   // 비밀번호 암호화
   private async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
+  }
+
+  async filterData(data) {
+    const sub = await getRepository(User)
+      .createQueryBuilder()
+      .select('username, "isPartner", certified')
+      .where({
+        ...data,
+      });
+
+    const res = await getManager()
+      .createQueryBuilder()
+      .select('s.*')
+      .from('(' + sub.getQuery() + ')', 's')
+      .getRawMany();
+
+    return res;
   }
 }

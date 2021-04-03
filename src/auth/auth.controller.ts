@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
+  Query,
   // UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -30,4 +32,9 @@ export class AuthController {
   // test(@GetUser() user: User) {
   //   console.log(user);
   // }
+
+  @Get('/filtering')
+  filtering(@Query('filter') filter: string, @Query('type') type: string) {
+    return this.authService.authFilter(filter, type);
+  }
 }

@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { Task } from '../../src/tasks/task.entity';
+import { Task } from '../tasks/task.entity';
 
 @Entity()
 @Unique(['username'])
@@ -19,6 +19,12 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Task, (task) => task.user, { eager: true })
   tasks: Task[];
+
+  @Column({ default: false })
+  isPartner: boolean;
+
+  @Column({ default: false })
+  certified: boolean;
 
   // 비밀번호 같은지 검증
   async validatePassword(password: string): Promise<boolean> {
