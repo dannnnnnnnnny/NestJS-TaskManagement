@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  redis-server:
+    image: redis
+    container_name: myredis
+    ports:
+      - '6379:6379'
+    expose: 
+      - '6379'
+  doctornow-server:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./
+    container_name: doctornow-server
+    ports:
+      - '3000:3000'
+    depends_on:
+      - redis-server
+      - db
+    environment: 
+      redis_server_addr: redis
+  db:
+    image: postgres
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=taskmanagement
+    ports:
+      - '5432:5432'
