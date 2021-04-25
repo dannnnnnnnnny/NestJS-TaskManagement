@@ -1,10 +1,12 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getManager, Raw } from 'typeorm';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { JwtPayload } from './jwt-payload.interface';
-import { UserRepository } from './user.repository';
+import { Queue } from 'bull';
+import { Raw } from 'typeorm';
+import { AuthCredentialsDto } from '../dto/auth-credentials.dto';
+import { JwtPayload } from '../interface/jwt-payload.interface';
+import { UserRepository } from '../repository/user.repository';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +16,7 @@ export class AuthService {
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     private jwtService: JwtService,
+    @InjectQueue('audio') private audioQueue: Queue,
   ) {}
 
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {

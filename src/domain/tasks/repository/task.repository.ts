@@ -1,10 +1,10 @@
 import { InternalServerErrorException, Logger } from '@nestjs/common';
-import { User } from 'src/auth/user.entity';
+import { User } from 'src/domain/entities/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
-import { TaskStatus } from './task-status.enum';
-import { Task } from './task.entity';
+import { CreateTaskDto } from '../dto/create-task.dto';
+import { GetTasksFilterDto } from '../dto/get-tasks-filter.dto';
+import { TaskStatus } from '../dto/task-status.enum';
+import { Task } from '../../entities/task.entity';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
@@ -33,9 +33,7 @@ export class TaskRepository extends Repository<Task> {
       return tasks;
     } catch (error) {
       this.logger.error(
-        `Failed to get tasks for user "${user.username}", DTO: ${JSON.stringify(
-          filterDto,
-        )}`,
+        `Failed to get tasks for user "${user.username}", DTO: ${JSON.stringify(filterDto)}`,
         error.stack,
       );
       throw new InternalServerErrorException();
@@ -53,10 +51,7 @@ export class TaskRepository extends Repository<Task> {
     try {
       await task.save();
     } catch (error) {
-      this.logger.error(
-        `Failed to create a task for user "${user.username}". Data: ${createTaskDto}`,
-        error.stack,
-      );
+      this.logger.error(`Failed to create a task for user "${user.username}". Data: ${createTaskDto}`, error.stack);
       throw new InternalServerErrorException();
     }
     delete task.user; // 실제 엔티티에서 삭제하는 것이 아님

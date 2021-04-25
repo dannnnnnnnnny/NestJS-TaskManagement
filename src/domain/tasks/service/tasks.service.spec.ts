@@ -1,13 +1,14 @@
 import { Test } from '@nestjs/testing';
-import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
-import { TaskStatus } from './task-status.enum';
-import { TaskRepository } from './task.repository';
+import { GetTasksFilterDto } from '../dto/get-tasks-filter.dto';
+import { TaskStatus } from '../dto/task-status.enum';
+import { TaskRepository } from '../repository/task.repository';
 import { TasksService } from './tasks.service';
 
 const mockUser = { username: 'Test user' };
 
-const mockTaskRepository = () => ({ // 모의 저장소
-  getTasks: jest.fn(), 
+const mockTaskRepository = () => ({
+  // 모의 저장소
+  getTasks: jest.fn(),
   findOne: jest.fn(),
 });
 
@@ -48,8 +49,6 @@ describe('TasksService', () => {
       expect(result).toEqual(mockTask);
     });
 
-    it('throws an error as task is not found', () => {
-
-    });
+    it('throws an error as task is not found', () => {});
   });
 });

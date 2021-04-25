@@ -4,12 +4,12 @@ import { REQUEST } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bull';
 import { Logger as PinoLogger } from 'nestjs-pino';
-import { User } from 'src/auth/user.entity';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
-import { TaskStatus } from './task-status.enum';
-import { Task } from './task.entity';
-import { TaskRepository } from './task.repository';
+import { User } from 'src/domain/entities/user.entity';
+import { CreateTaskDto } from '../dto/create-task.dto';
+import { GetTasksFilterDto } from '../dto/get-tasks-filter.dto';
+import { TaskStatus } from '../dto/task-status.enum';
+import { Task } from '../../entities/task.entity';
+import { TaskRepository } from '../repository/task.repository';
 
 @Injectable()
 export class TasksService {
@@ -25,24 +25,17 @@ export class TasksService {
     private readonly pinoLogger: PinoLogger,
   ) {}
 
-  async addTaskQueue(createTaskDto: CreateTaskDto, user: User) {
-    await this.taskQueue.add(
-      'taskQueue',
-      { ...createTaskDto, userId: user.id, created: new Date(Date.now()).getTime() },
-      { delay: 10000 },
-    );
-
-    return { success: true, result: 'hello' };
-  }
-
   async getTasks(filterDto: GetTasksFilterDto, user: User) {
     this.logger.log(`${this.request.headers.host}, ${JSON.stringify(this.request.user)}, ${this.request.originalUrl}`);
     const headerRequest = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRhbm55IiwiaWF0IjoxNjE2Njc3MDg0LCJleHAiOjE2MTY2ODA2ODR9.VNh41ci3RRcqONOJhVkn6jeU6bbYXNn2JO7hItHRDL0'
+      Authorization:
+        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRhbm55IiwiaWF0IjoxNjE2Njc3MDg0LCJleHAiOjE2MTY2ODA2ODR9.VNh41ci3RRcqONOJhVkn6jeU6bbYXNn2JO7hItHRDL0',
     };
 
-    const data = await this.httpService.post('http://localhost:3000/tasks/queue',
+    const data = await this.httpService
+      .post(
+        'http://localhost:3000/tasks/queue',
         {
           title: 'haha',
           description: 'test',
@@ -78,11 +71,7 @@ export class TasksService {
     }
   }
 
-  async updateTaskStatus(
-    id: number,
-    status: TaskStatus,
-    user: User,
-  ): Promise<Task> {
+  async updateTaskStatus(id: number, status: TaskStatus, user: User): Promise<Task> {
     const task = await this.getTaskById(id, user);
     task.status = status;
     await task.save();
