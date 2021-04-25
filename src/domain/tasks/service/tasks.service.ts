@@ -30,7 +30,7 @@ export class TasksService {
     const headerRequest = {
       'Content-Type': 'application/json',
       Authorization:
-        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRhbm55IiwiaWF0IjoxNjE2Njc3MDg0LCJleHAiOjE2MTY2ODA2ODR9.VNh41ci3RRcqONOJhVkn6jeU6bbYXNn2JO7hItHRDL0',
+        'Bearer TEST',
     };
 
     const data = await this.httpService
